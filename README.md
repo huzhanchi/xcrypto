@@ -165,6 +165,56 @@ or release
 You will find the binary file in target/debug or targer/release
 
 
+## Cross-Compiling from aarch64 Linux (ARM64) to x86_64 Linux
+
+If you want to build a Linux x86_64 binary from an aarch64 (ARM64) Linux system, follow these steps:
+
+1. **Install the x86_64 Linux Target**
+
+   ```bash
+   rustup target add x86_64-unknown-linux-gnu
+   ```
+
+2. **Install a Cross Linker**
+
+   You need a cross-compiler that can produce x86_64 binaries on ARM64. On Ubuntu/Debian, install it with:
+
+   ```bash
+   sudo apt-get update
+   sudo apt-get install gcc-x86-64-linux-gnu
+   ```
+
+3. **Configure Cargo to Use the Cross Linker**
+
+   Create or edit `.cargo/config.toml` in your project root:
+
+   ```toml
+   [target.x86_64-unknown-linux-gnu]
+   linker = "x86_64-linux-gnu-gcc"
+   ```
+
+4. **(If Using OpenSSL) Enable Vendored Feature**
+
+   In your `Cargo.toml`:
+
+   ```toml
+   openssl = { version = "0.10", features = ["vendored"] }
+   ```
+   This ensures OpenSSL is built from source for the target.
+
+5. **Build for the Target**
+
+   ```bash
+   cargo build --release --target x86_64-unknown-linux-gnu
+   ```
+
+   Your x86_64 Linux binary will be in:
+   ```
+   target/x86_64-unknown-linux-gnu/release/<your-binary-name>
+   ```
+
+**Tip:** If you have more native dependencies, you may need to use the `vendored` feature or set up additional cross-compilation tools.
+
 ## Run
 
 Before you run the program, two files is required, one is the configuration file, and the other is your private key.
