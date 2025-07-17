@@ -2,3 +2,5 @@
 **/*.db
 *.db
 **/algo
+myenv/
+.cargo/

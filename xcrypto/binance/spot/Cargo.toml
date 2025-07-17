@@ -18,3 +18,4 @@ binance = {path ="../"}
 xcrypto = {path ="../../"}
 logger = {path ="../../logger"}
 url = "2.5.0"
+openssl = { version = "0.10", features = ["vendored"] }
