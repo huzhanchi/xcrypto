@@ -15,6 +15,7 @@ struct Config {
     apikey: String,
     pem: String,
     local: String,
+    test: Option<bool>, // Add test field with default None
 }
 
 #[derive(Debug, Parser)]
@@ -49,10 +50,18 @@ async fn main() -> anyhow::Result<()> {
     let _logger = init(Some(format!("log/{}", filename)), args.level);
 
     let app = Application::new(&config.local).await?;
-    let market = Market::new("wss://stream.binance.com:9443/ws".into()).await?;
+    
+    // Select URLs based on test configuration
+    let (ws_url, api_url): (String, String) = if config.test.unwrap_or(true) {
+        ("wss://stream.testnet.binance.vision/ws".into(), "https://testnet.binance.vision".into())
+    } else {
+        ("wss://stream.binance.com:9443/ws".into(), "https://api.binance.com".into())
+    };
+    
+    let market = Market::new(ws_url.clone()).await?;
 
     let rest = Arc::new(Rest::new(
-        "https://api.binance.com",
+        &api_url,
         &config.apikey,
         &config.pem,
         3000,
@@ -60,14 +69,14 @@ async fn main() -> anyhow::Result<()> {
 
     let account = if config.margin {
         Account::<SpotListenKey>::new(
-            "wss://stream.binance.com:9443/ws",
+            &ws_url,
             "/sapi/v1/userDataStream",
             rest.clone(),
         )
         .await?
     } else {
         Account::<SpotListenKey>::new(
-            "wss://stream.binance.com:9443/ws",
+            &ws_url,
             "/api/v3/userDataStream",
             rest.clone(),
         )
